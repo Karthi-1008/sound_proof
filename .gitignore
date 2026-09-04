@@ -1,0 +1,37 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Model weight cache (large, ~85 MB — stored locally, excluded from git)
+.model_cache/
+**/.model_cache/
+
+# Temporary upload buffer
+uploads/*.mp3
+uploads/*.wav
+uploads/*.flac
+uploads/*.m4a
+uploads/*.ogg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+

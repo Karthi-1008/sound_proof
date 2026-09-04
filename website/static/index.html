@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundProof — Speaker Verification System</title>
+    
+    <!-- Google Fonts: Lora, Caveat, Inter, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Lora:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Design Tokens & Stylesheet -->
+    <link rel="stylesheet" href="/static/assets/design-tokens.css?v=3.2.4">
+    <link rel="stylesheet" href="/static/style.css?v=3.2.4">
+</head>
+<body class="sp-dashboard-body tex-noise-grain">
+    <div class="sp-layout-wrapper">
+
+        <!-- Left Sidebar Navigation -->
+        <aside class="sp-sidebar tex-charcoal-concrete">
+            <div class="sp-brand-header">
+                <div class="sp-brand-badge">
+                    <i class="fa-solid fa-microphone-lines"></i>
+                </div>
+                <div class="sp-brand-title">
+                    <h2>SOUNDPROOF</h2>
+                    <span>SPEAKER VERIFICATION</span>
+                </div>
+            </div>
+
+            <!-- Sidebar Nav Links -->
+            <nav class="sp-sidebar-nav">
+                <button class="nav-link active" data-view="viewDashboard" id="navDashboard">
+                    <i class="fa-solid fa-border-all"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-link" data-view="viewVerification" id="navVerification">
+                    <i class="fa-solid fa-microphone"></i>
+                    <span>Verification</span>
+                </button>
+                <button class="nav-link" data-view="viewHistory" id="navHistory">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Results History</span>
+                </button>
+                <button class="nav-link" data-view="viewSettings" id="navSettings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </button>
+                <button class="nav-link" data-view="viewStatus" id="navStatus">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>System Status</span>
+                </button>
+                <button class="nav-link" data-view="viewAbout" id="navAbout">
+                    <i class="fa-solid fa-circle-question"></i>
+                    <span>About</span>
+                </button>
+            </nav>
+
+            <!-- Decorative Cassette Tape Box -->
+            <div class="sp-cassette-card">
+                <div class="cassette-illustration">
+                    <div class="cassette-spool left"></div>
+                    <div class="cassette-label-tape">TDK SA 50</div>
+                    <div class="cassette-spool right"></div>
+                </div>
+                <span class="cassette-quote">"Every voice has a fingerprint."</span>
+            </div>
+
+            <!-- Engine Telemetry Box -->
+            <div class="sp-telemetry-box">
+                <div class="telemetry-header">
+                    <span class="dot-green"></span>
+                    <span class="telemetry-title">ECAPA-TDNN Ready</span>
+                </div>
+                <div class="telemetry-waveform-svg">
+                    <img src="/static/assets/waveforms/voice-wave-line.svg" alt="Waveform">
+                </div>
+                <div class="telemetry-details">
+                    <div class="t-row"><span class="lbl">Model</span><span class="val truncate">speechbrain/spkrec-ecapa-voxceleb</span></div>
+                    <div class="t-row"><span class="lbl">Device</span><span class="val" id="telemetryDevice">CPU</span></div>
+                    <div class="t-row"><span class="lbl">Sample Rate</span><span class="val">16 kHz</span></div>
+                    <div class="t-row"><span class="lbl">CPU Cores</span><span class="val" id="telemetryCores">8</span></div>
+                </div>
+                <div class="telemetry-version">v3.2.0-pro</div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Body -->
+        <main class="sp-main-workspace">
+
+            <!-- Top Header Toolbar -->
+            <header class="sp-header-toolbar">
+                <div class="welcome-box">
+                    <span class="welcome-greeting">Welcome back,</span>
+                    <h1 class="welcome-heading" id="viewHeaderTitle">Ready to verify some voices?<span class="red-scribble"></span></h1>
+                </div>
+
+                <div class="header-right-actions">
+                    <button class="btn-cpu-mode">
+                        <i class="fa-solid fa-microchip"></i> CPU Mode
+                    </button>
+                </div>
+            </header>
+
+            <!-- VIEW 1: DASHBOARD (MAIN WORKSTATION) -->
+            <div class="sp-view-section" id="viewDashboard">
+                <!-- Top Row: 2 Warm Paper Cards -->
+                <div class="sp-cards-grid-2col">
+                    <div class="warm-paper-card" id="refPaperCard">
+                        <div class="paper-card-header">
+                            <div class="paper-title-group">
+                                <span class="num-badge">1</span>
+                                <h3>REFERENCE VOICE PROFILE</h3>
+                            </div>
+                            <span class="paper-tag-burgundy">TARGET SPEAKER</span>
+                        </div>
+
+                        <div class="paper-dropzone" id="refDropzone">
+                            <input type="file" id="refFileInput" accept="audio/*" class="hidden-input">
+                            <div class="paper-circle-icon">
+                                <i class="fa-solid fa-microphone"></i>
+                            </div>
+                            <h4>Drag & Drop Reference Audio</h4>
+                            <p>or <button type="button" class="btn-paper-link" id="browseRefBtn">Browse Files</button> (mp3, wav, flac, m4a, ogg)</p>
+                            <span class="paper-subtext">Recommended: 5–30 seconds of clear speech</span>
+                        </div>
+
+                        <div class="paper-card-footer">
+                            <label class="paper-checkbox-container">
+                                <input type="checkbox" id="usePresetRefCheckbox" checked>
+                                <span class="paper-checkmark"></span>
+                                <span>Use default reference: <code>ref/ref.mp3</code></span>
+                            </label>
+                            <img src="/static/assets/waveforms/voice-wave-line.svg" class="paper-mini-wave" alt="Wave">
+                        </div>
+                    </div>
+
+                    <div class="warm-paper-card" id="candPaperCard">
+                        <div class="paper-card-header">
+                            <div class="paper-title-group">
+                                <span class="num-badge">2</span>
+                                <h3>CANDIDATE VOICE FILES</h3>
+                            </div>
+                            <span class="paper-count-text" id="candidateCountTag">0 Files Selected</span>
+                        </div>
+
+                        <div class="paper-dropzone" id="candDropzone">
+                            <input type="file" id="candFileInput" accept="audio/*" multiple class="hidden-input">
+                            <div class="paper-circle-icon">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <h4>Drag & Drop Candidate Recordings</h4>
+                            <p>or <button type="button" class="btn-paper-link" id="browseCandBtn">Select Multiple Audio Files</button></p>
+                            <span class="paper-subtext">Upload any number of candidate clips to verify</span>
+                        </div>
+
+                        <div class="paper-card-footer center">
+                            <button class="btn-paper-secondary" id="loadWorkspaceBtn">
+                                <i class="fa-solid fa-folder-open"></i> Load Workspace Audio Files
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Split View -->
+                <div class="sp-middle-split" style="margin-top: 20px;">
+                    <div class="sp-left-workspace">
+                        <div class="sp-dark-panel candidate-explorer-panel">
+                            <div class="panel-header-row">
+                                <div class="panel-title-with-script">
+                                    <i class="fa-solid fa-wave-square red-icon"></i>
+                                    <h3>CANDIDATE FILES</h3>
+                                    <span class="script-annotation">$\longrightarrow$ All comparisons are cosine similarity</span>
+                                </div>
+                                <div class="panel-header-actions">
+                                    <label class="sp-checkbox-inline">
+                                        <input type="checkbox" id="selectAllCheckbox">
+                                        <span>Select All</span>
+                                    </label>
+                                    <button class="btn-dark-secondary" id="deleteSelectedBtn">
+                                        <i class="fa-solid fa-trash-can"></i> Delete Selected
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="table-scroll-box">
+                                <table class="sp-explorer-table" id="candidateTable">
+                                    <thead>
+                                        <tr>
+                                            <th class="th-cb"></th>
+                                            <th class="th-play"></th>
+                                            <th>FILE NAME</th>
+                                            <th>WAVEFORM PREVIEW</th>
+                                            <th>DURATION</th>
+                                            <th>SIMILARITY</th>
+                                            <th>RESULT</th>
+                                            <th class="th-menu"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="candidateTbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="sp-dark-panel controls-parameter-bar">
+                            <div class="param-box">
+                                <div class="param-label-row">
+                                    <div class="param-title-with-info">
+                                        <label for="thresholdRange">SIMILARITY THRESHOLD</label>
+                                        <span class="info-tooltip-wrapper">
+                                            <span class="info-icon-badge" tabindex="0" aria-label="Similarity Threshold Info">?</span>
+                                            <span class="info-tooltip-box">
+                                                <strong>Similarity Threshold (&tau;)</strong>
+                                                Cosine similarity cutoff (0.50 &ndash; 0.98) used to decide if candidate audio belongs to the target reference speaker.
+                                                <div class="tt-guide">
+                                                    <span>&bull; <strong>&lt; 0.80</strong>: Permissive &mdash; higher false-positive risk.</span>
+                                                    <span>&bull; <strong>0.85</strong>: Recommended &mdash; standard VoxCeleb benchmark.</span>
+                                                    <span>&bull; <strong>&gt; 0.90</strong>: Strict &mdash; near-identical acoustic signature required.</span>
+                                                </div>
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <span class="param-val-red" id="thresholdValDisplay">0.85</span>
+                                </div>
+                                <span class="script-hint">~ Higher is stricter ~</span>
+                                <input type="range" id="thresholdRange" min="0.50" max="0.98" step="0.01" value="0.85" class="sp-red-slider">
+                                <div class="slider-tick-labels">
+                                    <span>0.50<br><small>Permissive</small></span>
+                                    <span>0.85<br><small>Recommended</small></span>
+                                    <span>0.98<br><small>Strict</small></span>
+                                </div>
+                            </div>
+
+                            <div class="param-box">
+                                <div class="param-label-row">
+                                    <div class="param-title-with-info">
+                                        <label for="chunkRange">CHUNK DURATION</label>
+                                        <span class="info-tooltip-wrapper">
+                                            <span class="info-icon-badge" tabindex="0" aria-label="Chunk Duration Info">?</span>
+                                            <span class="info-tooltip-box">
+                                                <strong>Chunk Duration (seconds)</strong>
+                                                Window length (5s &ndash; 30s) used to slice long audio recordings.
+                                                <div class="tt-guide">
+                                                    <span>&bull; Long recordings are split into overlapping segments.</span>
+                                                    <span>&bull; Each chunk is embedded and averaged into a full-file profile.</span>
+                                                    <span>&bull; Recommended: 20.0s for natural speech cadence.</span>
+                                                </div>
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <span class="param-val-white" id="chunkValDisplay">20.0s</span>
+                                </div>
+                                <input type="range" id="chunkRange" min="5.0" max="30.0" step="1.0" value="20.0" class="sp-red-slider">
+                                <div class="slider-tick-labels">
+                                    <span>5s</span>
+                                    <span>10s</span>
+                                    <span>20s</span>
+                                    <span>30s</span>
+                                </div>
+                            </div>
+
+                            <div class="param-box action-box">
+                                <button class="btn-burgundy-primary" id="startVerifyBtn">
+                                    <i class="fa-solid fa-microphone"></i>
+                                    <div class="btn-text-block">
+                                        <span class="btn-title">START VERIFICATION</span>
+                                        <span class="btn-subtitle">Compare reference with candidates</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <aside class="sp-right-summary-col">
+                        <div class="sp-dark-panel summary-panel">
+                            <div class="summary-header">
+                                <h3>VERIFICATION SUMMARY</h3>
+                                <span class="badge-live-tag">Live</span>
+                            </div>
+                            <div class="stats-2x2-grid">
+                                <div class="stat-card">
+                                    <span class="stat-number" id="statTotal">6</span>
+                                    <span class="stat-label">Total Compared</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-number pass-green" id="statPassed">2</span>
+                                    <span class="stat-label">Matches (Pass)</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-number fail-red" id="statFailed">4</span>
+                                    <span class="stat-label">No Match (Fail)</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-number" id="statAvg">0.56</span>
+                                    <span class="stat-label">Avg. Similarity</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="warm-paper-card best-match-paper-card" id="bestMatchCard">
+                            <div class="paper-card-header">
+                                <span class="best-match-tag">BEST MATCH</span>
+                            </div>
+                            <div class="best-match-body">
+                                <div class="best-match-title-row">
+                                    <h3 id="bestMatchName">voice_01.mp3</h3>
+                                    <span class="badge-pass-green" id="bestMatchPill">PASS</span>
+                                </div>
+                                <div class="best-match-metrics-row">
+                                    <div class="bm-metric">
+                                        <span class="bm-lbl">Similarity Score</span>
+                                        <span class="bm-val" id="bestMatchScore">0.93</span>
+                                    </div>
+                                    <div class="bm-metric">
+                                        <span class="bm-lbl">Duration</span>
+                                        <span class="bm-val" id="bestMatchDuration">00:12</span>
+                                    </div>
+                                </div>
+                                <div class="best-match-stamp">
+                                    <div class="stamp-circle"><i class="fa-solid fa-microphone-lines"></i></div>
+                                    <img src="/static/assets/waveforms/voice-wave-line.svg" class="stamp-wave" alt="Wave Stamp">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sp-dark-panel actions-panel">
+                            <div class="actions-header">
+                                <h3>RECOMMENDED ACTIONS</h3>
+                            </div>
+                            <p class="rec-text-paragraph" id="recText">2 files passed verification. You may delete failed candidates to keep your workspace clean.</p>
+                            <div class="rec-buttons-group">
+                                <button class="btn-burgundy-outline" id="deleteFailedFilesBtn">
+                                    <i class="fa-solid fa-trash-can"></i> Delete Failed Files (<span id="failedCountText">4</span>)
+                                </button>
+                                <button class="btn-dark-ghost" id="viewFailedBtn">
+                                    View Failed Files
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <!-- VIEW 2: VERIFICATION STUDIO -->
+            <div class="sp-view-section hidden" id="viewVerification">
+                <div class="sp-dark-panel inspector-layout">
+                    <div class="panel-header-row">
+                        <div class="panel-title-with-script">
+                            <i class="fa-solid fa-wave-square red-icon"></i>
+                            <h3>VERIFICATION STUDIO &amp; WAVEFORM INSPECTOR</h3>
+                            <span class="script-annotation">&mdash; Real-time FFT spectrum &amp; neural embedding diagnostics</span>
+                        </div>
+                        <span class="badge-live-tag"><i class="fa-solid fa-circle-dot"></i> Live Studio Engine</span>
+                    </div>
+
+                    <!-- Master Visualizer Screen -->
+                    <div class="inspector-main-display">
+                        <div class="inspector-screen-header">
+                            <div class="inspector-screen-title">
+                                <span class="crt-badge">DSP MONITOR</span>
+                                <span id="inspectorTrackTitle">ref.mp3 (Reference Voice)</span>
+                                <span style="opacity: 0.4;">|</span>
+                                <span id="inspectorSampleRate">16,000 Hz Mono</span>
+                            </div>
+                            <div class="inspector-mode-switch">
+                                <button type="button" class="btn-mode-tab active" data-mode="dual" id="modeDualBtn"><i class="fa-solid fa-layer-group"></i> Dual Monitor</button>
+                                <button type="button" class="btn-mode-tab" data-mode="oscilloscope" id="modeScopeBtn"><i class="fa-solid fa-chart-line"></i> Oscilloscope</button>
+                                <button type="button" class="btn-mode-tab" data-mode="spectrum" id="modeSpectrumBtn"><i class="fa-solid fa-chart-simple"></i> Equalizer FFT</button>
+                            </div>
+                        </div>
+
+                        <canvas id="inspectorCanvas" width="900" height="230"></canvas>
+
+                        <!-- Audio Transport Controls Bar -->
+                        <div class="inspector-controller-bar">
+                            <div class="inspector-track-select">
+                                <label for="inspectorTrackSelect">AUDIO SOURCE</label>
+                                <select id="inspectorTrackSelect" class="inspector-select-dropdown">
+                                    <option value="ref.mp3">Target: ref.mp3 (Reference Voice)</option>
+                                </select>
+                            </div>
+
+                            <div class="inspector-transport">
+                                <div class="transport-buttons-row">
+                                    <button type="button" class="btn-transport" id="inspectorPlayBtn" title="Play / Pause">
+                                        <i class="fa-solid fa-play"></i>
+                                    </button>
+                                    <button type="button" class="btn-transport-stop" id="inspectorStopBtn" title="Stop">
+                                        <i class="fa-solid fa-stop"></i>
+                                    </button>
+                                    <div class="transport-progress-wrap" style="flex:1;">
+                                        <input type="range" id="inspectorSeekbar" class="transport-seekbar" min="0" max="100" value="0" step="0.1">
+                                        <span class="transport-time-code" id="inspectorTimeCode">00:00 / 00:00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="inspector-volume-wrap">
+                                <i class="fa-solid fa-volume-high"></i>
+                                <input type="range" id="inspectorVolSlider" class="inspector-vol-slider" min="0" max="1" step="0.05" value="0.9" title="Volume">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Spectral Telemetry HUD -->
+                    <div class="inspector-telemetry-grid">
+                        <div class="telemetry-card">
+                            <span class="t-label">PEAK FREQUENCY / FORMANT</span>
+                            <span class="t-value" id="telPeakFreq">-- Hz</span>
+                            <span class="t-sub" id="telFormantLabel">Awaiting audio playback...</span>
+                        </div>
+                        <div class="telemetry-card">
+                            <span class="t-label">RMS SIGNAL LEVEL (dBFS)</span>
+                            <span class="t-value" id="telRmsDb">- &infin; dB</span>
+                            <div class="vu-meter-bar">
+                                <div class="vu-meter-fill" id="vuMeterFill"></div>
+                            </div>
+                        </div>
+                        <div class="telemetry-card">
+                            <span class="t-label">TARGET SAMPLE RATE</span>
+                            <span class="t-value">16.0 kHz</span>
+                            <span class="t-sub">SpeechBrain ECAPA Target</span>
+                        </div>
+                        <div class="telemetry-card">
+                            <span class="t-label">VOICE EMBEDDING PROFILE</span>
+                            <span class="t-value">192-D</span>
+                            <span class="t-sub">L2-Normalized Hyper-Sphere</span>
+                        </div>
+                    </div>
+
+                    <!-- Voice Comparison & A/B Quick Audition Console -->
+                    <div class="inspector-ab-console">
+                        <div class="ab-voice-box reference">
+                            <h4>
+                                <span><i class="fa-solid fa-microphone red-icon"></i> Reference Voice</span>
+                                <span style="font-size: 11px; opacity: 0.7;" id="abRefName">ref.mp3</span>
+                            </h4>
+                            <p style="font-size: 11px; color: var(--sp-text-muted);">Master enrolled speaker profile used as ground truth.</p>
+                            <button type="button" class="btn-audition" id="auditionRefBtn">
+                                <i class="fa-solid fa-play"></i> Audition Reference
+                            </button>
+                        </div>
+
+                        <div class="ab-middle-meter">
+                            <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.8px; color: var(--sp-text-muted);">COSINE SIMILARITY</span>
+                            <span class="ab-score" id="abSimScore">--</span>
+                            <span class="ab-badge" id="abResultBadge" style="background:#2C2825; color:#8E9387;">SELECT CANDIDATE</span>
+                        </div>
+
+                        <div class="ab-voice-box candidate">
+                            <h4>
+                                <span><i class="fa-solid fa-wave-square" style="color:#5ec98f;"></i> Candidate Voice</span>
+                                <span style="font-size: 11px; opacity: 0.7;" id="abCandName">--</span>
+                            </h4>
+                            <p style="font-size: 11px; color: var(--sp-text-muted);">Candidate sample evaluated against reference vector.</p>
+                            <button type="button" class="btn-audition" id="auditionCandBtn">
+                                <i class="fa-solid fa-play"></i> Audition Candidate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: RESULTS HISTORY -->
+            <div class="sp-view-section hidden" id="viewHistory">
+                <div class="sp-dark-panel">
+                    <div class="panel-header-row">
+                        <h3>HISTORICAL VERIFICATION LOGS</h3>
+                        <button class="btn-dark-secondary" id="exportHistoryBtn"><i class="fa-solid fa-download"></i> Export History CSV</button>
+                    </div>
+                    <div class="table-scroll-box">
+                        <table class="sp-explorer-table">
+                            <thead>
+                                <tr>
+                                    <th>TIMESTAMP</th>
+                                    <th>REFERENCE FILE</th>
+                                    <th>CANDIDATE FILE</th>
+                                    <th>SIMILARITY</th>
+                                    <th>DECISION</th>
+                                    <th>THRESHOLD</th>
+                                    <th>EXEC TIME</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTbody">
+                                <tr>
+                                    <td>2026-08-03 22:50:12</td>
+                                    <td>ref.mp3</td>
+                                    <td>voice_01.mp3</td>
+                                    <td><strong>0.93</strong></td>
+                                    <td><span class="result-badge pass">PASS</span></td>
+                                    <td>0.85</td>
+                                    <td>0.42s</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-08-03 22:50:12</td>
+                                    <td>ref.mp3</td>
+                                    <td>voice_02.wav</td>
+                                    <td><strong>0.87</strong></td>
+                                    <td><span class="result-badge pass">PASS</span></td>
+                                    <td>0.85</td>
+                                    <td>0.38s</td>
+                                </tr>
+                                <tr>
+                                    <td>2026-08-03 22:50:12</td>
+                                    <td>ref.mp3</td>
+                                    <td>voice_03.m4a</td>
+                                    <td><strong>0.64</strong></td>
+                                    <td><span class="result-badge fail">FAIL</span></td>
+                                    <td>0.85</td>
+                                    <td>0.45s</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- VIEW 6: SETTINGS -->
+            <div class="sp-view-section hidden" id="viewSettings">
+                <div class="sp-dark-panel" style="max-width: 700px;">
+                    <div class="panel-header-row">
+                        <h3>ENGINE & VERIFICATION SETTINGS</h3>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:16px; margin-top:16px;">
+                        <div>
+                            <label style="font-weight:600; display:block; margin-bottom:4px;">Default Similarity Threshold ($\tau$)</label>
+                            <input type="number" step="0.01" value="0.85" style="background:#110E0D; border:1px solid var(--sp-border-color); color:#fff; padding:8px 12px; border-radius:4px; width:100%;">
+                        </div>
+                        <div>
+                            <label style="font-weight:600; display:block; margin-bottom:4px;">Parallel Worker Threads</label>
+                            <select style="background:#110E0D; border:1px solid var(--sp-border-color); color:#fff; padding:8px 12px; border-radius:4px; width:100%;">
+                                <option>8 Threads (Native Physical Cores)</option>
+                                <option>4 Threads</option>
+                                <option>16 Threads</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-weight:600; display:block; margin-bottom:4px;">Model Cache Savedir</label>
+                            <input type="text" value=".model_cache/spkrec-ecapa-voxceleb" readonly style="background:#110E0D; border:1px solid var(--sp-border-color); color:#888; padding:8px 12px; border-radius:4px; width:100%;">
+                        </div>
+                        <button class="btn-burgundy-primary" style="width:200px; height:40px; margin-top:10px;" onclick="alert('Settings saved successfully.')">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 7: SYSTEM STATUS -->
+            <div class="sp-view-section hidden" id="viewStatus">
+                <div class="sp-dark-panel">
+                    <div class="panel-header-row">
+                        <h3>SYSTEM HARDWARE & ENGINE STATUS</h3>
+                        <span class="badge-pass-green">● ALL SYSTEMS OPERATIONAL</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-top:16px;">
+                        <div style="background:#191615; border:1px solid var(--sp-border-color); padding:16px; border-radius:6px;">
+                            <span style="color:var(--sp-text-muted); font-size:11px;">NEURAL MODEL</span>
+                            <h4 style="margin-top:4px;">ECAPA-TDNN (VoxCeleb)</h4>
+                            <span style="color:var(--sp-pass-text); font-size:12px;">Loaded in Memory</span>
+                        </div>
+                        <div style="background:#191615; border:1px solid var(--sp-border-color); padding:16px; border-radius:6px;">
+                            <span style="color:var(--sp-text-muted); font-size:11px;">EXECUTION DEVICE</span>
+                            <h4 style="margin-top:4px;">PyTorch CPU Backend</h4>
+                            <span style="color:var(--sp-text-muted); font-size:12px;">8 Physical Threads</span>
+                        </div>
+                        <div style="background:#191615; border:1px solid var(--sp-border-color); padding:16px; border-radius:6px;">
+                            <span style="color:var(--sp-text-muted); font-size:11px;">AUDIO CODECS</span>
+                            <h4 style="margin-top:4px;">SoundFile / Torchaudio</h4>
+                            <span style="color:var(--sp-pass-text); font-size:12px;">WAV, MP3, FLAC, M4A, OGG</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 8: ABOUT -->
+            <div class="sp-view-section hidden" id="viewAbout">
+                <div class="sp-dark-panel" style="max-width: 650px;">
+                    <div class="panel-header-row">
+                        <h3>ABOUT SOUNDPROOF PRO</h3>
+                    </div>
+                    <p style="margin-top:12px; line-height:1.6; color:var(--sp-text-primary);">
+                        <strong>SoundProof Pro v3.2</strong> is a state-of-the-art offline speaker verification platform engineered for audio professionals, forensic investigators, journalists, and researchers.
+                    </p>
+                    <p style="margin-top:12px; line-height:1.6; color:var(--sp-text-muted);">
+                        Powered by <strong>SpeechBrain's ECAPA-TDNN</strong> (Emphasized Channel Attention, Propagation and Aggregation in Time-Delay Neural Networks) pre-trained on VoxCeleb1+2, achieving ~0.8% Equal Error Rate (EER).
+                    </p>
+                    <div style="margin-top:20px; border-top:1px solid var(--sp-border-color); padding-top:14px; font-size:11px; color:var(--sp-text-dim);">
+                        Built with Python 3, PyTorch, Torchaudio, FastAPI, and Vanilla JS • SoundProof v3.2.0 Pro Studio
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="sp-dashboard-footer">
+                <span>SoundProof © 2026 • Speaker Verification System • Built with FastAPI ♡</span>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- Application JavaScript -->
+    <script src="/static/app.js?v=3.2.4"></script>
+</body>
+</html>

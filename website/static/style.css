@@ -313,6 +313,23 @@ body.sp-dashboard-body {
     display: flex;
     align-items: center;
     gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-cpu-mode:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.btn-cpu-mode.mode-gpu {
+    background-color: rgba(94, 201, 143, 0.12);
+    border-color: rgba(94, 201, 143, 0.4);
+    color: #5ec98f;
+}
+
+.btn-cpu-mode.mode-gpu i {
+    color: #5ec98f;
+    text-shadow: 0 0 8px rgba(94, 201, 143, 0.6);
 }
 
 .user-avatar-circle {

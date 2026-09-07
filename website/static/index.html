@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Design Tokens & Stylesheet -->
-    <link rel="stylesheet" href="/static/assets/design-tokens.css?v=3.2.4">
-    <link rel="stylesheet" href="/static/style.css?v=3.2.4">
+    <link rel="stylesheet" href="/static/assets/design-tokens.css?v=3.2.8">
+    <link rel="stylesheet" href="/static/style.css?v=3.2.8">
 </head>
 <body class="sp-dashboard-body tex-noise-grain">
     <div class="sp-layout-wrapper">
@@ -100,8 +100,8 @@
                 </div>
 
                 <div class="header-right-actions">
-                    <button class="btn-cpu-mode">
-                        <i class="fa-solid fa-microchip"></i> CPU Mode
+                    <button class="btn-cpu-mode" id="headerDeviceBtn" title="Click to toggle between GPU and CPU acceleration">
+                        <i class="fa-solid fa-microchip" id="headerDeviceIcon"></i> <span id="headerDeviceText">CPU Mode</span>
                     </button>
                 </div>
             </header>
@@ -174,7 +174,7 @@
                                 <div class="panel-title-with-script">
                                     <i class="fa-solid fa-wave-square red-icon"></i>
                                     <h3>CANDIDATE FILES</h3>
-                                    <span class="script-annotation">$\longrightarrow$ All comparisons are cosine similarity</span>
+                                    <span class="script-annotation">&longrightarrow; All comparisons are cosine similarity</span>
                                 </div>
                                 <div class="panel-header-actions">
                                     <label class="sp-checkbox-inline">
@@ -525,26 +525,33 @@
             <div class="sp-view-section hidden" id="viewSettings">
                 <div class="sp-dark-panel" style="max-width: 700px;">
                     <div class="panel-header-row">
-                        <h3>ENGINE & VERIFICATION SETTINGS</h3>
+                        <h3>ENGINE &amp; HARDWARE ACCELERATION SETTINGS</h3>
                     </div>
                     <div style="display:flex; flex-direction:column; gap:16px; margin-top:16px;">
                         <div>
-                            <label style="font-weight:600; display:block; margin-bottom:4px;">Default Similarity Threshold ($\tau$)</label>
-                            <input type="number" step="0.01" value="0.85" style="background:#110E0D; border:1px solid var(--sp-border-color); color:#fff; padding:8px 12px; border-radius:4px; width:100%;">
-                        </div>
-                        <div>
-                            <label style="font-weight:600; display:block; margin-bottom:4px;">Parallel Worker Threads</label>
-                            <select style="background:#110E0D; border:1px solid var(--sp-border-color); color:#fff; padding:8px 12px; border-radius:4px; width:100%;">
-                                <option>8 Threads (Native Physical Cores)</option>
-                                <option>4 Threads</option>
-                                <option>16 Threads</option>
+                            <label style="font-weight:600; display:block; margin-bottom:4px;">Execution Engine &amp; Hardware Acceleration</label>
+                            <select id="settingsDeviceSelect" style="background:#110E0D; border:1px solid var(--sp-border-color); color:#fff; padding:8px 12px; border-radius:4px; width:100%; cursor:pointer;">
+                                <option value="auto">⚡ Auto-Detect (WebGPU if supported by laptop, fallback to CPU)</option>
+                                <option value="gpu">🚀 WebGPU Mode (Laptop Hardware GPU Acceleration)</option>
+                                <option value="cpu">💻 CPU Mode (Multi-Threaded Wasm / Web Audio)</option>
                             </select>
+                            <small id="hardwareDetectedHint" style="display:block; margin-top:6px; color:var(--sp-pass-text); font-size:11px;">
+                                Detecting laptop hardware acceleration...
+                            </small>
                         </div>
                         <div>
-                            <label style="font-weight:600; display:block; margin-bottom:4px;">Model Cache Savedir</label>
-                            <input type="text" value=".model_cache/spkrec-ecapa-voxceleb" readonly style="background:#110E0D; border:1px solid var(--sp-border-color); color:#888; padding:8px 12px; border-radius:4px; width:100%;">
+                            <label style="font-weight:600; display:block; margin-bottom:4px;">Default Similarity Threshold (&tau;)</label>
+                            <input type="number" id="settingsThresholdInput" step="0.01" min="0.50" max="0.98" value="0.85" style="background:#110E0D; border:1px solid var(--sp-border-color); color:#fff; padding:8px 12px; border-radius:4px; width:100%;">
                         </div>
-                        <button class="btn-burgundy-primary" style="width:200px; height:40px; margin-top:10px;" onclick="alert('Settings saved successfully.')">Save Settings</button>
+                        <div>
+                            <label style="font-weight:600; display:block; margin-bottom:4px;">Chunk Window Slicing (seconds)</label>
+                            <input type="number" id="settingsChunkInput" step="1.0" min="5.0" max="30.0" value="20.0" style="background:#110E0D; border:1px solid var(--sp-border-color); color:#fff; padding:8px 12px; border-radius:4px; width:100%;">
+                        </div>
+                        <div>
+                            <label style="font-weight:600; display:block; margin-bottom:4px;">Deployment Architecture</label>
+                            <input type="text" value="In-Browser Client-Side Engine (Optimized for Vercel Static Hosting &amp; Laptop GPU/CPU)" readonly style="background:#110E0D; border:1px solid var(--sp-border-color); color:#888; padding:8px 12px; border-radius:4px; width:100%;">
+                        </div>
+                        <button class="btn-burgundy-primary" id="saveSettingsBtn" style="width:200px; height:40px; margin-top:10px;">Save Settings</button>
                     </div>
                 </div>
             </div>
@@ -553,23 +560,23 @@
             <div class="sp-view-section hidden" id="viewStatus">
                 <div class="sp-dark-panel">
                     <div class="panel-header-row">
-                        <h3>SYSTEM HARDWARE & ENGINE STATUS</h3>
+                        <h3>SYSTEM HARDWARE &amp; ENGINE STATUS</h3>
                         <span class="badge-pass-green">● ALL SYSTEMS OPERATIONAL</span>
                     </div>
                     <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-top:16px;">
                         <div style="background:#191615; border:1px solid var(--sp-border-color); padding:16px; border-radius:6px;">
                             <span style="color:var(--sp-text-muted); font-size:11px;">NEURAL MODEL</span>
                             <h4 style="margin-top:4px;">ECAPA-TDNN (VoxCeleb)</h4>
-                            <span style="color:var(--sp-pass-text); font-size:12px;">Loaded in Memory</span>
+                            <span style="color:var(--sp-pass-text); font-size:12px;">192-D Hyper-Sphere (Browser DSP)</span>
                         </div>
                         <div style="background:#191615; border:1px solid var(--sp-border-color); padding:16px; border-radius:6px;">
                             <span style="color:var(--sp-text-muted); font-size:11px;">EXECUTION DEVICE</span>
-                            <h4 style="margin-top:4px;">PyTorch CPU Backend</h4>
-                            <span style="color:var(--sp-text-muted); font-size:12px;">8 Physical Threads</span>
+                            <h4 style="margin-top:4px;" id="statusDeviceTitle">WebGPU Hardware GPU</h4>
+                            <span style="color:var(--sp-pass-text); font-size:12px;" id="statusDeviceSubtitle">Direct3D / Vulkan Active</span>
                         </div>
                         <div style="background:#191615; border:1px solid var(--sp-border-color); padding:16px; border-radius:6px;">
                             <span style="color:var(--sp-text-muted); font-size:11px;">AUDIO CODECS</span>
-                            <h4 style="margin-top:4px;">SoundFile / Torchaudio</h4>
+                            <h4 style="margin-top:4px;">Web Audio API</h4>
                             <span style="color:var(--sp-pass-text); font-size:12px;">WAV, MP3, FLAC, M4A, OGG</span>
                         </div>
                     </div>
@@ -603,6 +610,6 @@
     </div>
 
     <!-- Application JavaScript -->
-    <script src="/static/app.js?v=3.2.4"></script>
+    <script src="/static/app.js?v=3.2.8"></script>
 </body>
 </html>

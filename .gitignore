@@ -1,18 +1,16 @@
-# Python cache
+ï»¿# Python cache
 __pycache__/
 *.py[cod]
 *.pyo
 
-# Model weight cache (large, ~85 MB — stored locally, excluded from git)
+# Model weight cache (large, ~85 MB - stored locally, excluded from git)
 .model_cache/
 **/.model_cache/
 
 # Temporary upload buffer
-uploads/*.mp3
-uploads/*.wav
-uploads/*.flac
-uploads/*.m4a
-uploads/*.ogg
+uploads/*
+**/uploads/*
+!**/uploads/.gitkeep
 
 # Virtual environments
 .venv/

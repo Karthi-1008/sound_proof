@@ -1,13 +1,9 @@
-{
-  "version": 2,
-  "public": true,
+﻿{
   "cleanUrls": true,
-  "routes": [
-    { "src": "/api/candidates", "dest": "/website/static/candidates.json" },
-    { "src": "/api/status", "dest": "/website/static/status.json" },
-    { "src": "/api/audio/(.*)", "dest": "/website/static/audio/$1" },
-    { "src": "/static/(.*)", "dest": "/website/static/$1" },
-    { "src": "/", "dest": "/website/static/index.html" },
-    { "src": "/(.*)", "dest": "/website/static/$1" }
+  "rewrites": [
+    { "source": "/api/candidates", "destination": "/static/candidates.json" },
+    { "source": "/api/status", "destination": "/static/status.json" },
+    { "source": "/api/audio/:match*", "destination": "/static/audio/:match*" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

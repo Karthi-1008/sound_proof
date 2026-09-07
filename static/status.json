@@ -1,0 +1,7 @@
+﻿{
+  "device": "WebGPU / CPU Auto",
+  "cpu_threads": 4,
+  "status": "online",
+  "model": "ECAPA-TDNN (Client-Side Neural DSP & WebGPU)",
+  "codecs": ["WAV", "MP3", "FLAC", "M4A", "OGG"]
+}

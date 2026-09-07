@@ -1,0 +1,10 @@
+﻿{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/candidates", "destination": "/candidates.json" },
+    { "source": "/api/status", "destination": "/status.json" },
+    { "source": "/api/audio/:match*", "destination": "/audio/:match*" },
+    { "source": "/static/:match*", "destination": "/:match*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

@@ -1,9 +1,16 @@
-﻿{
-  "cleanUrls": true,
+{
   "rewrites": [
-    { "source": "/api/candidates", "destination": "/static/candidates.json" },
-    { "source": "/api/status", "destination": "/static/status.json" },
-    { "source": "/api/audio/:match*", "destination": "/static/audio/:match*" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/candidates",
+      "destination": "/static/candidates.json"
+    },
+    {
+      "source": "/api/status",
+      "destination": "/static/status.json"
+    },
+    {
+      "source": "/api/audio/:path*",
+      "destination": "/static/audio/:path*"
+    }
   ]
 }
